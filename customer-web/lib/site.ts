@@ -10,10 +10,10 @@ export const navLinks = [
 ];
 
 export const contact = {
-  phone: "+267 71 234 567",
-  phoneHref: "tel:+26771234567",
-  email: "hello@moveright.bw",
-  emailHref: "mailto:hello@moveright.bw",
+  phone: "+267 75 822 015",
+  phoneHref: "tel:+26775822015",
+  email: "moveright.support@gmail.com",
+  emailHref: "mailto:moveright.support@gmail.com",
   location: "Gaborone, Botswana",
   hours: "Mon–Sat: 7am – 6pm",
 };

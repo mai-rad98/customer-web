@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Clock, MapPin, ShieldCheck, Smartphone, Users, Zap } from "lucide-react";
+import { ArrowRight, BadgeCheck, Clock, HeartHandshake, MapPin, ShieldCheck, Smartphone, Users, Zap } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
 import RouteTracker from "@/components/RouteTracker";
 import CtaBand from "@/components/CtaBand";
@@ -22,7 +22,7 @@ const stats = [
   { value: "100+", label: "Happy customers" },
   { value: "5★", label: "Average rating" },
   { value: "Same day", label: "Response time" },
-  { value: "Fully", label: "Insured" },
+  { value: "With care", label: "Every item handled" },
 ];
 
 const steps = [
@@ -91,7 +91,7 @@ export default function HomePage() {
 
             <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/70">
               {[
-                { icon: ShieldCheck, label: "Fully insured" },
+                { icon: HeartHandshake, label: "Handled with care" },
                 { icon: BadgeCheck, label: "Vetted, uniformed crew" },
                 { icon: Zap, label: "Quotes within 1 business day" },
               ].map(({ icon: Icon, label }) => (

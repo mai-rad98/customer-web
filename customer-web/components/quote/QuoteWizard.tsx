@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeft, ArrowRight, CircleCheck, CircleHelp, Loader2, PencilLine } from "lucide-react";
-import { services } from "@/lib/site";
+import { contact, services } from "@/lib/site";
 
 const serviceOptions = [
   ...services.map((s) => ({ value: s.title, icon: s.icon })),
@@ -97,6 +97,9 @@ export default function QuoteWizard() {
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const [quoteRef, setQuoteRef] = useState<string | null>(null);
+  const honeypot = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<Form>({
     name: "",
     email: "",
@@ -145,10 +148,22 @@ export default function QuoteWizard() {
       return;
     }
     setLoading(true);
-    // Static site: simulate submission delay; wire to API in Phase 2
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setSubmitted(true);
+    setSendError("");
+    try {
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, company: honeypot.current?.value ?? "" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "We couldn't send your request.");
+      setQuoteRef(data.ref ?? null);
+      setSubmitted(true);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "We couldn't send your request.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const errorCount = Object.values(errors).filter(Boolean).length;
@@ -165,8 +180,13 @@ export default function QuoteWizard() {
         <p className="mx-auto mt-3 max-w-md leading-relaxed text-muted">
           Thank you, {form.name}. We&apos;ll review your move details and send you a quote within one business day.
         </p>
+        {quoteRef && (
+          <p className="mt-5 text-sm text-muted">
+            Your reference: <strong className="font-mono text-base tracking-wider text-ink">{quoteRef}</strong>
+          </p>
+        )}
         <p className="mt-4 text-sm text-muted">
-          We&apos;ll reach out to you at <strong className="text-ink">{form.email}</strong> or{" "}
+          A confirmation is on its way to <strong className="text-ink">{form.email}</strong>. We may also call you on{" "}
           <strong className="text-ink">{form.phone}</strong>.
         </p>
         <div className="mx-auto mt-8 inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 font-mono text-xs tracking-wider text-muted ring-1 ring-line">
@@ -179,7 +199,7 @@ export default function QuoteWizard() {
   const current = steps[step];
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="overflow-hidden rounded-3xl bg-white ring-1 ring-line">
+    <form onSubmit={handleSubmit} noValidate className="relative overflow-hidden rounded-3xl bg-white ring-1 ring-line">
       {/* Progress */}
       <div className="border-b border-line px-6 pt-6 pb-5 sm:px-8">
         <div className="flex items-center justify-between font-mono text-[0.68rem] tracking-[0.16em]">
@@ -360,6 +380,22 @@ export default function QuoteWizard() {
           )}
         </div>
       </div>
+
+      {/* Hidden from people; bots that fill in every field give themselves away */}
+      <div aria-hidden className="absolute left-[-9999px] h-px w-px overflow-hidden">
+        <label htmlFor="company">Company</label>
+        <input ref={honeypot} id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
+
+      {sendError && (
+        <div role="alert" className="mx-6 mb-5 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200 sm:mx-8">
+          {sendError} Please try again, or call us on{" "}
+          <a href={contact.phoneHref} className="font-semibold underline">
+            {contact.phone}
+          </a>
+          .
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex items-center justify-between gap-3 border-t border-line bg-surface/60 px-6 py-5 sm:px-8">

@@ -29,7 +29,7 @@ export default function Footer() {
             </span>
           </div>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/60">
-            Gaborone&apos;s trusted moving and relocation partner. Professional, insured, and always on time.
+            Gaborone&apos;s trusted moving and relocation partner. Professional, careful, and always on time.
           </p>
           <p className="mt-4 font-mono text-xs tracking-wider text-white/40">&ldquo;YOUR MOVE. OUR PRIORITY.&rdquo;</p>
         </div>

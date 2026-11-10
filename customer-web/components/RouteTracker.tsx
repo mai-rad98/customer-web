@@ -1,4 +1,4 @@
-import { Clock, ShieldCheck, Truck, Users, Zap } from "lucide-react";
+import { Clock, HeartHandshake, Truck, Users, Zap } from "lucide-react";
 
 /** Decorative "live move" card for the home hero — a preview of in-app tracking. */
 export default function RouteTracker() {
@@ -7,11 +7,11 @@ export default function RouteTracker() {
       {/* Floating chips */}
       <div className="glass absolute -top-5 -left-3 z-10 flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-white shadow-xl animate-float sm:-left-8">
         <Zap className="size-3.5 text-orange" />
-        Quote sent in 3h
+        Quote sent in 10 minutes
       </div>
       <div className="glass absolute -right-2 -bottom-5 z-10 flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-white shadow-xl animate-float [animation-delay:-3s] sm:-right-6">
-        <ShieldCheck className="size-3.5 text-orange" />
-        Fully insured
+        <HeartHandshake className="size-3.5 text-orange" />
+        Handled with care
       </div>
 
       <div className="glass relative overflow-hidden rounded-3xl p-5 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.6)]">
