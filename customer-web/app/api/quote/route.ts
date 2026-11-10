@@ -1,5 +1,12 @@
 // Receives the quote wizard and forwards it to the MoveRight backend.
 // Runs on the server so WEBSITE_API_KEY never reaches the browser and the backend needs no CORS changes.
+import { after, connection } from "next/server";
+
+// The backend (Render free tier) sleeps when idle and can take ~30 s to wake, so allow for that
+export const maxDuration = 60;
+const BACKEND_TIMEOUT_MS = 50_000;
+
+const backendUrl = (path: string) => `${(process.env.QUOTES_API_URL ?? "").replace(/\/$/, "")}${path}`;
 
 const FIELDS = ["name", "email", "phone", "service", "propertySize", "pickup", "destination", "date", "message"] as const;
 
@@ -18,6 +25,16 @@ function tooMany(ip: string) {
 }
 
 const fail = (error: string, status: number) => Response.json({ error }, { status });
+
+// Called when the quote form opens: wakes the backend while the visitor fills in the steps.
+// connection() makes this run on every request (otherwise it would be prerendered once at build time).
+export async function GET() {
+  await connection();
+  if (process.env.QUOTES_API_URL) {
+    after(() => fetch(backendUrl("/api/public/health"), { signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS) }).catch(() => {}));
+  }
+  return new Response(null, { status: 204 });
+}
 
 export async function POST(request: Request) {
   const api = process.env.QUOTES_API_URL;
@@ -47,11 +64,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const res = await fetch(`${api.replace(/\/$/, "")}/api/public/quotes`, {
+    const res = await fetch(backendUrl("/api/public/quotes"), {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-website-key": key },
       body: JSON.stringify(quote),
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {

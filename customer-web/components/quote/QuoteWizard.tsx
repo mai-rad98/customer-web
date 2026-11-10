@@ -97,6 +97,7 @@ export default function QuoteWizard() {
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [slow, setSlow] = useState(false);
   const [sendError, setSendError] = useState("");
   const [quoteRef, setQuoteRef] = useState<string | null>(null);
   const honeypot = useRef<HTMLInputElement>(null);
@@ -114,6 +115,11 @@ export default function QuoteWizard() {
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   const hasMounted = useRef(false);
+
+  // Wake our server now, so it's ready by the time the visitor presses Send
+  useEffect(() => {
+    fetch("/api/quote").catch(() => {});
+  }, []);
 
   // Move focus to the new step's heading so keyboard and screen-reader users land in the right place.
   useEffect(() => {
@@ -149,6 +155,7 @@ export default function QuoteWizard() {
     }
     setLoading(true);
     setSendError("");
+    const slowTimer = setTimeout(() => setSlow(true), 8000);
     try {
       const res = await fetch("/api/quote", {
         method: "POST",
@@ -162,6 +169,8 @@ export default function QuoteWizard() {
     } catch (err) {
       setSendError(err instanceof Error ? err.message : "We couldn't send your request.");
     } finally {
+      clearTimeout(slowTimer);
+      setSlow(false);
       setLoading(false);
     }
   };
@@ -421,7 +430,7 @@ export default function QuoteWizard() {
         >
           {loading ? (
             <>
-              <Loader2 className="size-4 animate-spin" aria-hidden /> Sending…
+              <Loader2 className="size-4 animate-spin" aria-hidden /> {slow ? "Still sending…" : "Sending…"}
             </>
           ) : (
             <>

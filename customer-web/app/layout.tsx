@@ -7,7 +7,13 @@ import Footer from "@/components/Footer";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
+// Vercel sets VERCEL_PROJECT_PRODUCTION_URL (e.g. moveright.vercel.app), so shared links get a full image URL
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "MoveRight — Your Move. Our Priority.",
   description:
     "Professional residential and office moving services in Gaborone and surrounding areas. Safe, reliable, stress-free relocations.",
