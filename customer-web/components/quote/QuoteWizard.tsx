@@ -156,18 +156,30 @@ export default function QuoteWizard() {
     setLoading(true);
     setSendError("");
     const slowTimer = setTimeout(() => setSlow(true), 8000);
+    const started = Date.now();
     try {
-      const res = await fetch("/api/quote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, company: honeypot.current?.value ?? "" }),
-      });
+      let res: Response;
+      try {
+        res = await fetch("/api/quote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, company: honeypot.current?.value ?? "" }),
+        });
+      } catch (networkErr) {
+        // The request never reached our server (offline, blocked, DNS…)
+        console.error("[quote] request did not reach /api/quote", networkErr);
+        throw networkErr;
+      }
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "We couldn't send your request.");
+      if (!res.ok) {
+        // Our server answered with an error: the reason is in Vercel → Logs ("[quote]")
+        console.error("[quote] /api/quote answered", res.status, data.error, `${Date.now() - started} ms`);
+        throw new Error(data.error || "We couldn't send your request.");
+      }
       setQuoteRef(data.ref ?? null);
       setSubmitted(true);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : "We couldn't send your request.");
+      setSendError(err instanceof Error && err.message !== "Failed to fetch" ? err.message : "We couldn't send your request.");
     } finally {
       clearTimeout(slowTimer);
       setSlow(false);
